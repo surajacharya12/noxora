@@ -5,10 +5,10 @@ const connectDB = require("./config/db");
 
 const app = express();
 
-connectDB();
+connectDB(process.env.MONGO_URI);
 
 app.use(async (req, res, next) => {
-  await connectDB();
+  await connectDB(process.env.MONGO_URI);
   next();
 });
 
