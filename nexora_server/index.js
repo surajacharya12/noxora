@@ -7,6 +7,11 @@ const app = express();
 
 connectDB();
 
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 
