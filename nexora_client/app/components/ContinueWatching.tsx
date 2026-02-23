@@ -92,22 +92,18 @@ const ContinueWatching = ({ onInfoClick, onToggleWishlist, wishlist = [] }: Cont
                     className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x scroll-smooth"
                 >
                     {watchedItems.map((item) => (
-                        <div key={item.id} className="snap-start relative group">
+                        <div key={item.id} className="min-w-[75%] md:min-w-[350px] lg:min-w-[380px] snap-start relative group">
                             <MovieCard 
                                 movie={item} 
-                                variant="standard" 
+                                variant="featured" 
                                 onInfoClick={onInfoClick} 
                                 onToggleWishlist={onToggleWishlist}
                                 isInWishlist={wishlist.includes(item.id)}
+                                badgeText="Watched"
                             />
-                            {/* Progress Overlay */}
-                            <div className="absolute top-3 right-3 bg-[#0b1020]/80 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 text-[10px] font-bold text-gray-400 flex items-center gap-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Clock size={10} className="text-cyan-500" />
-                                {new Date(item.progress.lastWatched).toLocaleDateString()}
-                            </div>
                             {/* Progress Bar */}
-                            <div className="mt-[-8px] h-1 w-[calc(100%-8px)] mx-auto bg-white/10 rounded-full overflow-hidden relative z-20">
-                                <div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: '65%' }} />
+                            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/10 overflow-hidden z-20">
+                                <div className="h-full bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.8)]" style={{ width: '65%' }} />
                             </div>
                         </div>
                     ))}

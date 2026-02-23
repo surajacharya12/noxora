@@ -97,13 +97,14 @@ const ContentSection = ({ onInfoClick, onToggleWishlist, wishlist = [] }: Conten
             className="flex gap-6 overflow-x-auto pb-10 no-scrollbar snap-x scroll-smooth"
           >
             {featuredMovies.map((movie) => (
-              <div key={movie.id} className="min-w-[85%] md:min-w-[45%] lg:min-w-[32%] snap-start first:ml-2">
+              <div key={movie.id} className="min-w-[85%] md:min-w-[400px] lg:min-w-[420px] snap-start first:ml-2">
                 <MovieCard 
                   movie={movie} 
                   variant="featured" 
                   onInfoClick={onInfoClick} 
                   onToggleWishlist={onToggleWishlist}
                   isInWishlist={wishlist.includes(movie.id)}
+                  badgeText="Featured"
                 />
               </div>
             ))}

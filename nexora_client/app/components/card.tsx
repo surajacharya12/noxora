@@ -28,6 +28,7 @@ interface MovieCardProps {
   onInfoClick?: (movie: Movie) => void;
   onToggleWishlist?: (movie: Movie) => void;
   isInWishlist?: boolean;
+  badgeText?: string;
 }
 
 const MovieCard = ({ 
@@ -36,7 +37,8 @@ const MovieCard = ({
   rank = null, 
   onInfoClick,
   onToggleWishlist,
-  isInWishlist
+  isInWishlist,
+  badgeText
 }: MovieCardProps) => {
   const router = useRouter();
   const title = movie.title || movie.name || "Untitled";
@@ -53,7 +55,7 @@ const MovieCard = ({
         onClick={() => onInfoClick?.(movie)}
         className="min-w-[180px] md:min-w-[220px] group cursor-pointer relative"
       >
-        <div className="relative aspect-[2/3] rounded-2xl overflow-hidden border border-white/10 group-hover:border-blue-500/50 transition-all duration-500 shadow-xl">
+        <div className="relative aspect-2/3 rounded-2xl overflow-hidden border border-white/10 group-hover:border-blue-500/50 transition-all duration-500 shadow-xl">
           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
           
           {/* Overlay on Hover */}
@@ -121,7 +123,11 @@ const MovieCard = ({
       >
         <img src={featuredImage} alt={title} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" />
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent" />
-        <div className="absolute top-4 left-4 bg-orange-600 text-[10px] font-black uppercase px-3 py-1 rounded-lg tracking-tighter shadow-lg">Featured</div>
+        {badgeText && (
+          <div className="absolute top-4 left-4 bg-orange-600 text-[10px] font-black uppercase px-3 py-1 rounded-lg tracking-tighter shadow-lg z-10">
+            {badgeText}
+          </div>
+        )}
         <div className="absolute bottom-6 left-6 right-6">
           <h3 className="text-2xl font-bold mb-1 group-hover:text-cyan-400 transition-colors">{title}</h3>
           <p className="text-gray-400 text-xs line-clamp-1 mb-4">{movie.overview || movie.desc}</p>
@@ -160,7 +166,7 @@ const MovieCard = ({
         <span className="text-[140px] font-black leading-none text-white/10 absolute -left-4 -bottom-4 z-0 group-hover:text-cyan-500/20 transition-colors duration-500 italic">
           {rank}
         </span>
-        <div className="relative z-10 w-3/4 ml-auto aspect-[2/3] rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:-translate-y-3 group-hover:border-cyan-500/50">
+        <div className="relative z-10 w-3/4 ml-auto aspect-2/3 rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:-translate-y-3 group-hover:border-cyan-500/50">
            <img src={image} alt={title} className="w-full h-full object-cover" />
            <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-[#020617]/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-4">
               <div className="flex items-center gap-2 mb-1">
