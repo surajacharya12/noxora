@@ -18,8 +18,11 @@ app.use("/api/search", require("./routes/search"));
 app.use("/api/wishlist", require("./routes/wishlist"));
 app.use("/api/progress", require("./routes/watchProgress"));
 
+const mongoose = require("mongoose");
+
 app.get("/", (req, res) => {
-  res.send("Nexora Streaming Server Running...");
+  const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected";
+  res.send(`Nexora Streaming Server Running... (DB Status: ${dbStatus})`);
 });
 
 // Error handling middleware
