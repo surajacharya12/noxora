@@ -1,7 +1,19 @@
 const express = require("express");
-const { fetchDetails, generatePlayerUrl } = require("../data/api");
+const axios = require("axios");
+const { fetchDetails, generatePlayerUrl, fetchDiscover } = require("../data/api");
 
 const router = express.Router();
+
+// Get discovery series
+router.get("/", async (req, res) => {
+  try {
+    const { genre, page } = req.query;
+    const data = await fetchDiscover("tv", genre, page);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Get series details
 router.get("/:id", async (req, res) => {
@@ -18,6 +30,19 @@ router.get("/:id", async (req, res) => {
     });
 
     res.json({ ...data, playerUrl });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get season details
+router.get("/:id/season/:season_number", async (req, res) => {
+  try {
+    const { id, season_number } = req.params;
+    const response = await axios.get(
+      `${process.env.TMDB_BASE_URL}/tv/${id}/season/${season_number}?api_key=${process.env.TMDB_API_KEY}`,
+    );
+    res.json(response.data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

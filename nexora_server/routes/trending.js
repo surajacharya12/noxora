@@ -7,8 +7,9 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const type = req.query.type || "all"; // 'all', 'movie', 'tv'
-    const results = await fetchTrending(type);
-    res.json(results);
+    const page = req.query.page || 1;
+    const data = await fetchTrending(type, page);
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

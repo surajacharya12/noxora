@@ -9,7 +9,7 @@ const watchProgressSchema = new mongoose.Schema(
     },
     mediaId: { type: String, required: true },
     mediaType: { type: String, required: true }, // movie or tv
-    minutesWatched: { type: Number, required: true },
+    secondsWatched: { type: Number, required: true },
     lastWatched: { type: Date, default: Date.now },
   },
   { timestamps: true },

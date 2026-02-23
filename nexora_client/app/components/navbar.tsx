@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, User, Menu, X } from "lucide-react";
+import { Search, User, Menu, X, Bell, LogOut } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-const Navbar = () => {
+interface NavbarProps {
+  onSearch?: (query: string) => void;
+}
+
+const Navbar = ({ onSearch }: NavbarProps) => {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
-  // Handle scroll effect for that "Netflix-style" transparent-to-solid transition
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -18,61 +25,79 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchValue)}`);
+      setIsSearchOpen(false);
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchValue(val);
+    onSearch?.(val);
+  };
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 px-4 md:px-12 py-4 flex items-center justify-between ${
         isScrolled
-          ? "bg-[#020617]/90 backdrop-blur-md border-b border-white/10"
-          : "bg-gradient-to-b from-black/70 to-transparent"
+          ? "bg-[#020617]/95 backdrop-blur-md border-b border-white/10"
+          : "bg-gradient-to-b from-black/80 to-transparent"
       }`}
     >
       {/* LEFT SIDE: Logo & Desktop Links */}
       <div className="flex items-center gap-8">
         <Link
-          href="/"
-          className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600"
+          href="/homePage"
+          className="transition-transform active:scale-95"
         >
-          <Image src="/assets/logo.png" alt="Nexora" width={100} height={100} />
+          <Image src="/assets/logo.png" alt="Nexora" width={100} height={40} className="object-contain" />
         </Link>
 
-        <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-300">
-          <Link
-            href="/"
-            className="text-white hover:text-cyan-400 transition-colors"
-          >
-            Home
-          </Link>
-          <Link href="/movies" className="hover:text-white transition-colors">
-            Movies
-          </Link>
-          <Link href="/series" className="hover:text-white transition-colors">
-            Series
-          </Link>
-          <Link href="/trending" className="hover:text-white transition-colors">
-            Trending
-          </Link>
-          <Link href="/mylist" className="hover:text-white transition-colors">
-            My List
-          </Link>
+        <div className="hidden lg:flex items-center gap-8 text-[13px] font-bold tracking-wide uppercase text-gray-400">
+          <Link href="/homePage" className="text-white hover:text-cyan-400 transition-colors">Home</Link>
+          <Link href="/movies" className="hover:text-white transition-colors">Movies</Link>
+          <Link href="/series" className="hover:text-white transition-colors">Series</Link>
+          <Link href="/trending" className="hover:text-white transition-colors">Trending</Link>
+          <Link href="/mylist" className="hover:text-white transition-colors">My List</Link>
         </div>
       </div>
 
-      {/* RIGHT SIDE: Search & Profile */}
-      <div className="flex items-center gap-4 md:gap-6">
-        {/* Search Bar - Visible on both Mobile and Desktop */}
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-cyan-400 transition-colors" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-white/10 border border-white/10 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 w-32 sm:w-48 lg:w-64 transition-all"
-          />
+      {/* RIGHT SIDE: Icons & Profile */}
+      <div className="flex items-center gap-6">
+        <div className={`relative flex items-center transition-all duration-300 ${isSearchOpen ? 'w-48 md:w-64' : 'w-10'}`}>
+          <form onSubmit={handleSearchSubmit} className="w-full relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchValue}
+              onChange={handleSearchChange}
+              className={`w-full bg-white/10 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 backdrop-blur-md transition-all ${
+                isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+            />
+            <button 
+              type="button"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`absolute left-0 top-0 h-10 w-10 flex items-center justify-center text-gray-400 hover:text-white transition-colors ${isSearchOpen ? 'text-cyan-400' : ''}`}
+            >
+              <Search size={20} />
+            </button>
+          </form>
         </div>
 
+     
         {/* Profile Button */}
-        <button className="flex items-center gap-2 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-all">
-          <User className="w-4 h-4 text-cyan-400" />
-          <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">
+        <button 
+          onClick={() => router.push('/profile')}
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition-all group"
+        >
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+            <User className="w-4 h-4 text-white" />
+          </div>
+          <span className="hidden sm:inline text-xs font-bold tracking-wide text-gray-300 group-hover:text-white">
             Profile
           </span>
         </button>
@@ -86,44 +111,14 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* MOBILE DROPDOWN MENU (Links only) */}
+      {/* MOBILE DROPDOWN MENU */}
       {mobileMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-[#020617] border-b border-white/10 py-6 flex flex-col items-center gap-6 lg:hidden animate-in fade-in slide-in-from-top-4">
-          <Link
-            href="/"
-            className="text-lg font-semibold"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Home
-          </Link>
-          <Link
-            href="/movies"
-            className="text-lg font-semibold"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Movies
-          </Link>
-          <Link
-            href="/series"
-            className="text-lg font-semibold"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Series
-          </Link>
-          <Link
-            href="/trending"
-            className="text-lg font-semibold"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Trending
-          </Link>
-          <Link
-            href="/mylist"
-            className="text-lg font-semibold"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            My List
-          </Link>
+        <div className="absolute top-full left-0 w-full bg-[#020617] border-b border-white/10 py-8 flex flex-col items-center gap-6 lg:hidden animate-in fade-in slide-in-from-top-4 backdrop-blur-xl">
+          <Link href="/homePage" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+          <Link href="/movies" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Movies</Link>
+          <Link href="/series" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Series</Link>
+          <Link href="/trending" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Trending</Link>
+          <Link href="/mylist" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>My List</Link>
         </div>
       )}
     </nav>

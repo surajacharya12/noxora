@@ -17,21 +17,21 @@ router.get("/", auth, async (req, res) => {
 // Update watch progress
 router.post("/", auth, async (req, res) => {
   try {
-    const { mediaId, mediaType, minutesWatched } = req.body;
+    const { mediaId, mediaType, secondsWatched } = req.body;
     let progress = await WatchProgress.findOne({
       userId: req.user.id,
       mediaId,
     });
 
     if (progress) {
-      progress.minutesWatched = minutesWatched;
+      progress.secondsWatched = secondsWatched;
       progress.lastWatched = Date.now();
     } else {
       progress = new WatchProgress({
         userId: req.user.id,
         mediaId,
         mediaType,
-        minutesWatched,
+        secondsWatched,
       });
     }
 

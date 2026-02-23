@@ -1,7 +1,18 @@
 const express = require("express");
-const { fetchDetails, generatePlayerUrl } = require("../data/api");
+const { fetchDetails, generatePlayerUrl, fetchDiscover } = require("../data/api");
 
 const router = express.Router();
+
+// Get discovery movies
+router.get("/", async (req, res) => {
+  try {
+    const { genre, page } = req.query;
+    const data = await fetchDiscover("movie", genre, page);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Get movie details
 router.get("/:id", async (req, res) => {

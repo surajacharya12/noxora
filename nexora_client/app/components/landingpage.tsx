@@ -34,7 +34,7 @@ const NexoraLanding = () => {
               Sign In
             </Link>
             <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
-              Subscribe
+              Sign Up
             </Link>
           </div>
         </header>

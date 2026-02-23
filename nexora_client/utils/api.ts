@@ -6,10 +6,12 @@ const api = axios.create({
 
 export const apiCall = async (endpoint: string, method: string = 'GET', data: any = null) => {
   try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const response = await api({
       url: endpoint,
       method,
       data,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     return response.data;
   } catch (error) {

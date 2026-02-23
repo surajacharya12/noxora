@@ -1,116 +1,115 @@
-import React from "react";
-import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+"use client";
 
-const ContentSection = () => {
-  const movies = [
-    {
-      id: 1,
-      title: "Velocity Strike",
-      desc: "A high-octane action thriller where an elite team...",
-      img: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=500",
-    },
-    {
-      id: 2,
-      title: "Underworld Kings",
-      desc: "A powerful crime family battles for control of the city...",
-      img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=500",
-    },
-    {
-      id: 3,
-      title: "Titan Force",
-      desc: "When Earth faces an alien invasion, a team of superheroes...",
-      img: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=500",
-    },
-  ];
+import React, { useEffect, useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import MovieCard, { Movie } from "./card";
+import { apiCall } from "../../utils/api";
+
+interface ContentSectionProps {
+  onInfoClick: (movie: Movie) => void;
+  onToggleWishlist?: (movie: Movie) => void;
+  wishlist?: number[];
+}
+
+const ContentSection = ({ onInfoClick, onToggleWishlist, wishlist = [] }: ContentSectionProps) => {
+  const router = useRouter();
+  const [featuredMovies, setFeaturedMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const data = await apiCall('/trending?type=movie');
+        setFeaturedMovies(data.results?.slice(0, 10) || []); // Get results array
+      } catch (error) {
+        console.error("Error fetching featured:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, clientWidth } = scrollContainerRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+      scrollContainerRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
+
+  if (loading) return null;
 
   return (
-    <section className="bg-[#020617] pb-20 px-4 md:px-12 -mt-20 relative z-20 mt-5">
-      {/* 1. Glow Search Bar (from screenshot) */}
-      <div className="max-w-3xl mx-auto mb-20">
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-2xl blur-lg opacity-75 group-focus-within:opacity-100 transition duration-1000"></div>
-          <input
-            type="text"
-            placeholder="Search movies, series, documentaries..."
-            className="relative w-full bg-[#0b1020]/80 border border-white/10 rounded-2xl py-5 px-8 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-xl transition-all"
-          />
-        </div>
+    <section className="bg-[#020617] pb-10 px-4 md:px-12 -mt-16 pt-10 relative z-30">
+      
+      {/* 1. GLOWING SEARCH BAR */}
+      <div className="max-w-4xl mx-auto mb-20">
+        <form onSubmit={handleSearchSubmit} className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-cyan-600/30 to-blue-600/30 rounded-2xl blur-xl opacity-50 group-focus-within:opacity-100 transition duration-1000"></div>
+          <div className="relative flex items-center">
+            <Search className="absolute left-6 w-6 h-6 text-gray-500 group-focus-within:text-cyan-400 transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Search movies, series, documentaries..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#0b1020]/80 border border-white/10 rounded-2xl py-6 pl-16 pr-8 text-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 backdrop-blur-2xl transition-all placeholder:text-gray-600 font-medium text-white"
+            />
+          </div>
+        </form>
       </div>
 
-      {/* 2. Featured This Week Slider */}
-      <div className="relative group/slider">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Featured This Week
-          </h2>
-          <div className="flex gap-2">
-            <button className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors border border-white/5">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors border border-white/5">
-              <ChevronRight className="w-5 h-5" />
-            </button>
+      {/* 3. FEATURED THIS WEEK SLIDER */}
+      <div className="relative">
+          <div className="flex items-center justify-between mb-8 px-2">
+            <h2 className="text-3xl font-black tracking-tight">
+              Featured This Week
+            </h2>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => scroll('left')}
+                className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-all border border-white/10 shadow-lg active:scale-95 group"
+              >
+                <ChevronLeft className="w-6 h-6 group-hover:text-cyan-400" />
+              </button>
+              <button 
+                onClick={() => scroll('right')}
+                className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-all border border-white/10 shadow-lg active:scale-95 group"
+              >
+                <ChevronRight className="w-6 h-6 group-hover:text-cyan-400" />
+              </button>
+            </div>
+          </div>
+
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-6 overflow-x-auto pb-10 no-scrollbar snap-x scroll-smooth"
+          >
+            {featuredMovies.map((movie) => (
+              <div key={movie.id} className="min-w-[85%] md:min-w-[45%] lg:min-w-[32%] snap-start first:ml-2">
+                <MovieCard 
+                  movie={movie} 
+                  variant="featured" 
+                  onInfoClick={onInfoClick} 
+                  onToggleWishlist={onToggleWishlist}
+                  isInWishlist={wishlist.includes(movie.id)}
+                />
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Movie Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {movies.map((movie) => (
-            <div
-              key={movie.id}
-              className="group relative aspect-video rounded-3xl overflow-hidden bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all duration-500 hover:scale-[1.02] cursor-pointer shadow-2xl"
-            >
-              {/* Background Image */}
-              <img
-                src={movie.img}
-                alt={movie.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60"
-              />
-
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-
-              {/* "Featured" Badge */}
-              <div className="absolute top-4 left-4 bg-orange-600 text-[10px] font-black uppercase tracking-tighter px-3 py-1 rounded-lg">
-                Featured
-              </div>
-
-              {/* Content Detail */}
-              <div className="absolute bottom-6 left-6 right-6">
-                <h3 className="text-2xl font-bold mb-2 group-hover:text-cyan-400 transition-colors">
-                  {movie.title}
-                </h3>
-                <p className="text-gray-400 text-sm line-clamp-2 mb-4 group-hover:text-gray-200 transition-colors">
-                  {movie.desc}
-                </p>
-
-                {/* Hover Action Buttons */}
-                <div className="flex items-center gap-3 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                  <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl text-sm font-bold transition-all">
-                    <Play className="w-4 h-4 fill-white" /> Watch Now
-                  </button>
-                  <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-bold border border-white/10">
-                    More Info
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 3. Section Title for next row (Action & Adventure) */}
-      <div className="mt-20">
-        <h2 className="text-2xl font-bold mb-8">Action & Adventure</h2>
-        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="min-w-[200px] aspect-[2/3] bg-white/5 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all"
-            />
-          ))}
-        </div>
-      </div>
+      
     </section>
   );
 };

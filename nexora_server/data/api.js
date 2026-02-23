@@ -22,15 +22,15 @@ async function fetchDetails(type, id) {
 /**
  * Fetch trending movies or TV shows
  */
-async function fetchTrending(type = "all") {
+async function fetchTrending(type = "all", page = 1) {
   try {
     const response = await axios.get(
-      `${TMDB_BASE_URL}/trending/${type}/week?api_key=${TMDB_API_KEY}`,
+      `${TMDB_BASE_URL}/trending/${type}/week?api_key=${TMDB_API_KEY}&page=${page}`,
     );
-    return response.data.results;
+    return response.data;
   } catch (error) {
     console.error("Error fetching trending:", error.message);
-    return [];
+    return { results: [], total_pages: 0 };
   }
 }
 
@@ -80,9 +80,27 @@ function generatePlayerUrl(config) {
   return `${url}?${params.toString()}`;
 }
 
+/**
+ * Fetch discovery content (with genre and page support)
+ */
+async function fetchDiscover(type, genreId, page = 1) {
+  try {
+    let url = `${TMDB_BASE_URL}/discover/${type === 'movie' ? 'movie' : 'tv'}?api_key=${TMDB_API_KEY}&page=${page}&sort_by=popularity.desc`;
+    if (genreId && genreId !== 'all') {
+      url += `&with_genres=${genreId}`;
+    }
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error(`Error in discovery (${type}):`, error.message);
+    return { results: [], total_pages: 0 };
+  }
+}
+
 module.exports = {
   fetchDetails,
   fetchTrending,
   searchMulti,
   generatePlayerUrl,
+  fetchDiscover,
 };
