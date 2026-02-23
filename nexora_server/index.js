@@ -21,7 +21,13 @@ app.use("/api/progress", require("./routes/watchProgress"));
 const mongoose = require("mongoose");
 
 app.get("/", (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected";
+  const states = {
+    0: "Disconnected",
+    1: "Connected",
+    2: "Connecting",
+    3: "Disconnecting",
+  };
+  const dbStatus = states[mongoose.connection.readyState] || "Unknown";
   res.send(`Nexora Streaming Server Running... (DB Status: ${dbStatus})`);
 });
 
