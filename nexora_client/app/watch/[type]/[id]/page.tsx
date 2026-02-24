@@ -11,10 +11,10 @@ export default function WatchPage() {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
-    const type = params.type as string; // 'movie' or 'tv'
+    const type = params.type as 'movie' | 'tv' | 'anime';
     const id = params.id as string;
     
-    // TV Specific State
+    // TV / Anime Specific State
     const [activeSeason, setActiveSeason] = useState(1);
     const [activeEpisode, setActiveEpisode] = useState(1);
     const [episodes, setEpisodes] = useState<any[]>([]);
@@ -26,9 +26,11 @@ export default function WatchPage() {
     const [isAuth, setIsAuth] = useState(false);
     const [initialProgress, setInitialProgress] = useState(0);
     const [playerSource, setPlayerSource] = useState<'vidsrc' | 'vidking'>('vidsrc');
+    const [dubLanguage, setDubLanguage] = useState<'original' | 'hindi' | 'english'>('original');
 
     const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Check auth & fetch details
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token && token !== "undefined" && token !== "null") {
@@ -41,15 +43,17 @@ export default function WatchPage() {
 
     // Fetch episodes when season changes
     useEffect(() => {
-        if (type === 'tv' && isAuth) {
+        if ((type === 'tv' || type === 'anime') && isAuth) {
             fetchEpisodes(activeSeason);
         }
     }, [activeSeason, isAuth, id]);
 
+    // Fetch episodes
     const fetchEpisodes = async (seasonNum: number) => {
         setLoadingEpisodes(true);
         try {
-            const data = await apiCall(`/series/${id}/season/${seasonNum}`);
+            const endpoint = type === 'anime' ? `/anime/${id}/season/${seasonNum}` : `/series/${id}/season/${seasonNum}`;
+            const data = await apiCall(endpoint);
             setEpisodes(data.episodes || []);
         } catch (error) {
             console.error("Error fetching episodes:", error);
@@ -58,36 +62,43 @@ export default function WatchPage() {
         }
     };
 
+    // Fetch content details
     const fetchDetails = async (authenticated: boolean) => {
         setLoading(true);
         try {
-            const endpoint = type === 'movie' ? `/movies/${id}` : `/series/${id}`;
+            const endpoint =
+                type === 'movie' ? `/movies/${id}` :
+                type === 'tv' ? `/series/${id}` :
+                `/anime/${id}`;
+
             const promises: Promise<any>[] = [apiCall(endpoint)];
-            
-            if (authenticated) {
-                promises.push(apiCall('/progress'));
-            }
-            
+
+            if (authenticated) promises.push(apiCall('/progress'));
+
             const results = await Promise.all(promises);
             const data = results[0];
             setContent(data);
 
+            // Set initial progress
             if (authenticated && results[1]) {
                 const progressData = results[1];
                 const existingProgress = progressData.find((p: any) => p.mediaId === id);
-                if (existingProgress) {
-                    setInitialProgress(existingProgress.secondsWatched);
-                }
+                if (existingProgress) setInitialProgress(existingProgress.secondsWatched);
             }
 
+            // Recommendations
             const recData = await apiCall(`/trending?type=${type === 'movie' ? 'movie' : 'tv'}`);
             setRecommendations((recData.results || []).filter((item: Movie) => item.id.toString() !== id).slice(0, 10));
+
+            // Set default dub if available
+            if (data?.dubs?.length) setDubLanguage(data.dubs[0]);
         } catch (error) {
             console.error("Error fetching watch details:", error);
         } finally {
             setLoading(false);
         }
     };
+
     if (loading) return (
         <div className="min-h-screen bg-[#020617] flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
@@ -102,27 +113,28 @@ export default function WatchPage() {
         : content?.episode_run_time?.[0] 
           ? `${content.episode_run_time[0]}m`
           : "N/A";
-    
-    // Construct URLs
+
+    // Player URL
     const getPlayerUrl = () => {
+        const langParam = dubLanguage !== 'original' ? `&lang=${dubLanguage}` : '';
         if (playerSource === 'vidking') {
-            return type === 'movie' 
-                ? `https://www.vidking.net/embed/movie/${id}?color=0dcaf0&autoPlay=true&progress=${initialProgress}`
-                : `https://www.vidking.net/embed/tv/${id}/${activeSeason}/${activeEpisode}?color=0dcaf0&autoPlay=true&episodeSelector=true&nextEpisode=true&progress=${initialProgress}`;
+            return type === 'movie'
+                ? `https://www.vidking.net/embed/movie/${id}?color=0dcaf0&autoPlay=true&progress=${initialProgress}${langParam}`
+                : `https://www.vidking.net/embed/tv/${id}/${activeSeason}/${activeEpisode}?color=0dcaf0&autoPlay=true&episodeSelector=true&nextEpisode=true&progress=${initialProgress}${langParam}`;
         } else {
             return type === 'movie'
-                ? `https://vidsrc.to/embed/movie/${id}`
-                : `https://vidsrc.to/embed/tv/${id}/${activeSeason}/${activeEpisode}`;
+                ? `https://vidsrc.to/embed/movie/${id}${langParam}`
+                : `https://vidsrc.to/embed/tv/${id}/${activeSeason}/${activeEpisode}${langParam}`;
         }
     };
 
     return (
         <div className="bg-[#020617] min-h-screen text-white">
             <Navbar />
-            
+
             <main className="pt-24 pb-20">
                 {/* Header Controls */}
-                <div className="px-4 md:px-12 mb-6 flex items-center justify-between">
+                <div className="px-4 md:px-12 mb-6 flex items-center justify-between flex-wrap gap-2">
                     <button 
                         onClick={() => router.back()}
                         className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition-all active:scale-95 group font-bold text-sm"
@@ -131,7 +143,8 @@ export default function WatchPage() {
                         Back
                     </button>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                        {/* Player Servers */}
                         <button 
                             onClick={() => setPlayerSource('vidking')}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${playerSource === 'vidking' ? 'bg-cyan-500 border-cyan-400 text-black' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'}`}
@@ -144,13 +157,30 @@ export default function WatchPage() {
                         >
                             <Server size={14} /> Server 2
                         </button>
+
+                        {/* Dub / Language Selector */}
+                        <div className="flex gap-2 ml-2">
+                            {['original', 'hindi', 'english'].map((lang) => (
+                                <button
+                                    key={lang}
+                                    onClick={() => setDubLanguage(lang as typeof dubLanguage)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                        dubLanguage === lang 
+                                            ? 'bg-cyan-500 border-cyan-400 text-black' 
+                                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                                    }`}
+                                >
+                                    {lang.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Video Player Section */}
+                {/* Video Player */}
                 <div className="w-full aspect-video bg-black relative shadow-2xl overflow-hidden border-y border-white/5 group">
                     <iframe 
-                        key={`${playerSource}-${activeSeason}-${activeEpisode}`}
+                        key={`${playerSource}-${activeSeason}-${activeEpisode}-${dubLanguage}`}
                         src={getPlayerUrl()}
                         className="w-full h-full"
                         allowFullScreen
@@ -159,21 +189,17 @@ export default function WatchPage() {
                     />
                 </div>
 
+                {/* Content Details */}
                 <div className="flex flex-col lg:flex-row gap-12 px-4 md:px-12 mt-12">
-                    {/* Left Side: Details */}
                     <div className="flex-1">
-                        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight drop-shadow-xl text-white">
-                            {title}
-                        </h1>
-                        
+                        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight drop-shadow-xl text-white">{title}</h1>
+
                         <div className="flex items-center gap-4 mb-8">
                             <div className="flex items-center gap-1.5 bg-cyan-500/20 border border-cyan-400/30 px-3 py-1.5 rounded-xl text-cyan-400 font-black shadow-lg">
                                 <Star size={18} fill="currentColor" />
                                 <span>{rating}</span>
                             </div>
-                            <div className="bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-gray-300 font-bold">
-                                {year}
-                            </div>
+                            <div className="bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-gray-300 font-bold">{year}</div>
                             <div className="bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-gray-300 font-bold flex items-center gap-2">
                                 <Clock size={16} />
                                 {duration}
@@ -193,8 +219,8 @@ export default function WatchPage() {
                         </div>
                     </div>
 
-                    {/* Right Side: TV Specific Selector */}
-                    {type === 'tv' && (
+                    {/* TV / Anime Episode Selector */}
+                    {(type === 'tv' || type === 'anime') && (
                         <div className="w-full lg:w-[400px] shrink-0">
                             <div className="bg-[#0b1020] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
                                 <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5">
@@ -238,9 +264,7 @@ export default function WatchPage() {
                                                     }`}>
                                                         {ep.episode_number}
                                                     </div>
-                                                    <div className="flex-1 text-left line-clamp-1 text-sm">
-                                                        {ep.name}
-                                                    </div>
+                                                    <div className="flex-1 text-left line-clamp-1 text-sm">{ep.name}</div>
                                                     <PlayCircle className={`w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity ${
                                                         activeEpisode === ep.episode_number ? 'opacity-100 text-black' : 'text-cyan-400'
                                                     }`} />
@@ -254,7 +278,7 @@ export default function WatchPage() {
                     )}
                 </div>
 
-                {/* More Like This */}
+                {/* Recommendations */}
                 <div className="px-4 md:px-12 mt-20">
                     <h2 className="text-3xl font-black mb-10 tracking-tight flex items-center gap-4 text-white">
                         <span className="w-2 h-10 bg-cyan-500 rounded-full" />
