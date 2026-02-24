@@ -22,7 +22,6 @@ app.use("/api/trending", require("./routes/trending"));
 app.use("/api/search", require("./routes/search"));
 app.use("/api/wishlist", require("./routes/wishlist"));
 app.use("/api/progress", require("./routes/watchProgress"));
-app.use("/api/requests", require("./routes/requests"));
 
 const mongoose = require("mongoose");
 
