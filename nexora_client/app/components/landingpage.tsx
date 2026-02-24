@@ -31,7 +31,7 @@ const NexoraLanding = () => {
 
           <div className="flex items-center gap-6">
             <Link href="/homePage" className="text-sm font-bold text-gray-400 hover:text-white transition-colors cursor-pointer">
-              Browse Content
+             Start Watching Now →
             </Link>
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <Link href="/signin" className="text-sm font-bold hover:text-blue-400 transition-colors cursor-pointer">
@@ -56,13 +56,13 @@ const NexoraLanding = () => {
             Experience the next generation of entertainment. Stream ultra-high 
             definition movies, exclusive series, and mind-bending documentaries.
           </p>
-
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <Link href="/signup" className="group relative bg-orange-600 hover:bg-orange-500 px-8 py-4 rounded-full font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(234,88,12,0.4)] cursor-pointer">
-              Start Watching Now →
+              <Link href="/homePage" className="group relative bg-orange-600 hover:bg-orange-500 px-8 py-4 rounded-full font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(234,88,12,0.4)] cursor-pointer">
+Start Watching Now →
+              
             </Link>
-            <Link href="/homePage" className="text-lg font-bold text-gray-400 hover:text-white transition-all underline underline-offset-8 decoration-gray-700/50 hover:decoration-cyan-500/50 cursor-pointer">
-              Browse Catalog
+            <Link href="/signup" className="text-lg font-bold text-gray-400 hover:text-white transition-all underline underline-offset-8 decoration-gray-700/50 hover:decoration-cyan-500/50 cursor-pointer">
+             Rigester Now →
             </Link>
           </div>
 
