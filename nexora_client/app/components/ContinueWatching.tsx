@@ -15,6 +15,10 @@ const ContinueWatching = ({ onInfoClick, onToggleWishlist, wishlist = [] }: Cont
     const [watchedItems, setWatchedItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const uniqueWatchedItems = Array.from(
+  new Map(watchedItems.map(item => [item.id, item])).values()
+);
+    
 
     useEffect(() => {
         const fetchRecentlyWatched = async () => {
@@ -91,9 +95,8 @@ const ContinueWatching = ({ onInfoClick, onToggleWishlist, wishlist = [] }: Cont
                     ref={scrollContainerRef}
                     className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x scroll-smooth"
                 >
-                    {watchedItems.map((item) => (
-                        <div key={item.id} className="min-w-[75%] md:min-w-[350px] lg:min-w-[380px] snap-start relative group">
-                            <MovieCard 
+{uniqueWatchedItems.map((item) => (
+    <div key={item.id} className="w-[280px] snap-start relative group">                            <MovieCard 
                                 movie={item} 
                                 variant="featured" 
                                 onInfoClick={onInfoClick} 
