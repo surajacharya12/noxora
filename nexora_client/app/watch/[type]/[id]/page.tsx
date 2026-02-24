@@ -26,7 +26,7 @@ export default function WatchPage() {
     const [isAuth, setIsAuth] = useState(false);
     const [initialProgress, setInitialProgress] = useState(0);
     const [playerSource, setPlayerSource] = useState<'vidsrc' | 'vidking'>('vidsrc');
-    const [dubLanguage, setDubLanguage] = useState<'original' | 'hindi' | 'english'>('original');
+    const [dubLanguage, setDubLanguage] = useState<'original' | 'hi' | 'en'>('original');
 
     const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -43,10 +43,10 @@ export default function WatchPage() {
 
     // Fetch episodes when season changes
     useEffect(() => {
-        if ((type === 'tv' || type === 'anime') && isAuth) {
+        if ((type === 'tv' || type === 'anime')) {
             fetchEpisodes(activeSeason);
         }
-    }, [activeSeason, isAuth, id]);
+    }, [activeSeason, id]);
 
     // Fetch episodes
     const fetchEpisodes = async (seasonNum: number) => {
@@ -116,15 +116,33 @@ export default function WatchPage() {
 
     // Player URL
     const getPlayerUrl = () => {
-        const langParam = dubLanguage !== 'original' ? `&lang=${dubLanguage}` : '';
+        const langValue = dubLanguage === 'original' ? '' : dubLanguage;
+        
         if (playerSource === 'vidking') {
-            return type === 'movie'
-                ? `https://www.vidking.net/embed/movie/${id}?color=0dcaf0&autoPlay=true&progress=${initialProgress}${langParam}`
-                : `https://www.vidking.net/embed/tv/${id}/${activeSeason}/${activeEpisode}?color=0dcaf0&autoPlay=true&episodeSelector=true&nextEpisode=true&progress=${initialProgress}${langParam}`;
+            const baseUrl = type === 'movie'
+                ? `https://www.vidking.net/embed/movie/${id}`
+                : `https://www.vidking.net/embed/tv/${id}/${activeSeason}/${activeEpisode}`;
+            
+            const url = new URL(baseUrl);
+            url.searchParams.set('color', '0dcaf0');
+            url.searchParams.set('autoPlay', 'true');
+            if (initialProgress > 0) url.searchParams.set('progress', initialProgress.toString());
+            if (type === 'tv') {
+                url.searchParams.set('episodeSelector', 'true');
+                url.searchParams.set('nextEpisode', 'true');
+            }
+            if (langValue) url.searchParams.set('lang', langValue);
+            
+            return url.toString();
         } else {
-            return type === 'movie'
-                ? `https://vidsrc.to/embed/movie/${id}${langParam}`
-                : `https://vidsrc.to/embed/tv/${id}/${activeSeason}/${activeEpisode}${langParam}`;
+            const baseUrl = type === 'movie'
+                ? `https://vidsrc.to/embed/movie/${id}`
+                : `https://vidsrc.to/embed/tv/${id}/${activeSeason}/${activeEpisode}`;
+            
+            const url = new URL(baseUrl);
+            if (langValue) url.searchParams.set('lang', langValue);
+            
+            return url.toString();
         }
     };
 
@@ -160,17 +178,21 @@ export default function WatchPage() {
 
                         {/* Dub / Language Selector */}
                         <div className="flex gap-2 ml-2">
-                            {['original', 'hindi', 'english'].map((lang) => (
+                            {[
+                                { id: 'original', label: 'Original' },
+                                { id: 'hi', label: 'Hindi' },
+                                { id: 'en', label: 'English' }
+                            ].map((lang) => (
                                 <button
-                                    key={lang}
-                                    onClick={() => setDubLanguage(lang as typeof dubLanguage)}
+                                    key={lang.id}
+                                    onClick={() => setDubLanguage(lang.id as typeof dubLanguage)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                        dubLanguage === lang 
+                                        dubLanguage === lang.id 
                                             ? 'bg-cyan-500 border-cyan-400 text-black' 
                                             : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                                     }`}
                                 >
-                                    {lang.toUpperCase()}
+                                    {lang.label.toUpperCase()}
                                 </button>
                             ))}
                         </div>

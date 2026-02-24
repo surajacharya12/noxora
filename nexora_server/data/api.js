@@ -60,6 +60,7 @@ function generatePlayerUrl(config) {
     episode = 1,
     color = "0dcaf0",
     autoPlay = false,
+    lang = "",
   } = config;
 
   let url = "";
@@ -76,6 +77,10 @@ function generatePlayerUrl(config) {
     nextEpisode: (type === "tv").toString(),
     episodeSelector: (type === "tv").toString(),
   });
+
+  if (lang) {
+    params.set("lang", lang);
+  }
 
   return `${url}?${params.toString()}`;
 }
