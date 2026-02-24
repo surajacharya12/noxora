@@ -17,7 +17,12 @@ const Navbar = ({ onSearch }: NavbarProps) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
+  const [isAuth, setIsAuth] = useState(false);
+
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsAuth(!!(token && token !== "undefined" && token !== "null"));
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -61,7 +66,7 @@ const Navbar = ({ onSearch }: NavbarProps) => {
           <Link href="/movies" className="hover:text-white transition-colors">Movies</Link>
           <Link href="/series" className="hover:text-white transition-colors">Series</Link>
           <Link href="/trending" className="hover:text-white transition-colors">Trending</Link>
-          <Link href="/mylist" className="hover:text-white transition-colors">My List</Link>
+          {isAuth && <Link href="/mylist" className="hover:text-white transition-colors">My List</Link>}
         </div>
       </div>
 
@@ -89,18 +94,35 @@ const Navbar = ({ onSearch }: NavbarProps) => {
         </div>
 
      
-        {/* Profile Button */}
-        <button 
-          onClick={() => router.push('/profile')}
-          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition-all group"
-        >
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
+        {/* Profile or Auth Buttons */}
+        {isAuth ? (
+          <button 
+            onClick={() => router.push('/profile')}
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <span className="hidden sm:inline text-xs font-bold tracking-wide text-gray-300 group-hover:text-white">
+              Profile
+            </span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            <Link 
+              href="/signin"
+              className="hidden sm:block text-xs font-bold text-gray-400 hover:text-white transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link 
+              href="/signup"
+              className="bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-cyan-500/20"
+            >
+              Sign Up
+            </Link>
           </div>
-          <span className="hidden sm:inline text-xs font-bold tracking-wide text-gray-300 group-hover:text-white">
-            Profile
-          </span>
-        </button>
+        )}
 
         {/* Mobile Menu Toggle */}
         <button
@@ -118,7 +140,13 @@ const Navbar = ({ onSearch }: NavbarProps) => {
           <Link href="/movies" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Movies</Link>
           <Link href="/series" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Series</Link>
           <Link href="/trending" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Trending</Link>
-          <Link href="/mylist" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>My List</Link>
+          {isAuth && <Link href="/mylist" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>My List</Link>}
+          {!isAuth && (
+            <div className="flex flex-col items-center gap-4 mt-4">
+              <Link href="/signin" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+              <Link href="/signup" className="bg-cyan-500 text-black px-8 py-3 rounded-2xl font-bold" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+            </div>
+          )}
         </div>
       )}
     </nav>

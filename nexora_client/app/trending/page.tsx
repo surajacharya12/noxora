@@ -22,27 +22,28 @@ export default function TrendingPage() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token || token === "undefined" || token === "null") {
-            router.push("/");
-        } else {
+        if (token && token !== "undefined" && token !== "null") {
             setIsAuth(true);
-            fetchInitialData();
+            fetchInitialData(true);
+        } else {
+            setIsAuth(false);
+            fetchInitialData(false);
         }
-    }, [router]);
+    }, []);
 
     useEffect(() => {
-        if (isAuth) {
-            fetchTrendingContent(1, true);
-        }
-    }, [selectedType, isAuth]);
+        fetchTrendingContent(1, true);
+    }, [selectedType]);
 
-    const fetchInitialData = async () => {
+    const fetchInitialData = async (authenticated: boolean) => {
         try {
-            const wishlistData = await apiCall('/wishlist');
-            if (Array.isArray(wishlistData)) {
-                setWishlist(wishlistData.map((item: any) => item.mediaId));
+            if (authenticated) {
+                const wishlistData = await apiCall('/wishlist');
+                if (Array.isArray(wishlistData)) {
+                    setWishlist(wishlistData.map((item: any) => item.mediaId));
+                }
             }
-            await fetchTrendingContent(1, true);
+            // fetchTrendingContent is already called by the other useEffect
         } catch (error) {
             console.error("Error fetching initial data:", error);
         }
@@ -80,6 +81,10 @@ export default function TrendingPage() {
     };
 
     const handleToggleWishlist = async (movie: Movie) => {
+        if (!isAuth) {
+            router.push('/signin');
+            return;
+        }
         try {
             const isInWishlist = wishlist.includes(movie.id);
             if (isInWishlist) {
@@ -101,7 +106,7 @@ export default function TrendingPage() {
         }
     };
 
-    if (!isAuth) return null;
+
 
     return (
         <div className="bg-[#020617] min-h-screen pt-24 px-4 md:px-12">

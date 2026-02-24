@@ -22,6 +22,11 @@ const ContinueWatching = ({ onInfoClick, onToggleWishlist, wishlist = [] }: Cont
 
     useEffect(() => {
         const fetchRecentlyWatched = async () => {
+            const token = localStorage.getItem("token");
+            if (!token || token === "undefined" || token === "null") {
+                setLoading(false);
+                return;
+            }
             try {
                 const progress = await apiCall('/progress');
                 

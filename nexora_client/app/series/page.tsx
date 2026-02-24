@@ -33,27 +33,28 @@ export default function SeriesPage() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token || token === "undefined" || token === "null") {
-            router.push("/");
-        } else {
+        if (token && token !== "undefined" && token !== "null") {
             setIsAuth(true);
-            fetchInitialData();
+            fetchInitialData(true);
+        } else {
+            setIsAuth(false);
+            fetchInitialData(false);
         }
-    }, [router]);
+    }, []);
 
     useEffect(() => {
-        if (isAuth) {
-            fetchSeries(1, true);
-        }
-    }, [selectedGenre, isAuth]);
+        fetchSeries(1, true);
+    }, [selectedGenre]);
 
-    const fetchInitialData = async () => {
+    const fetchInitialData = async (authenticated: boolean) => {
         try {
-            const wishlistData = await apiCall('/wishlist');
-            if (Array.isArray(wishlistData)) {
-                setWishlist(wishlistData.map((item: any) => item.mediaId));
+            if (authenticated) {
+                const wishlistData = await apiCall('/wishlist');
+                if (Array.isArray(wishlistData)) {
+                    setWishlist(wishlistData.map((item: any) => item.mediaId));
+                }
             }
-            await fetchSeries(1, true);
+            // fetchSeries is already called by the other useEffect
         } catch (error) {
             console.error("Error fetching initial data:", error);
         }
@@ -91,6 +92,10 @@ export default function SeriesPage() {
     };
 
     const handleToggleWishlist = async (movie: Movie) => {
+        if (!isAuth) {
+            router.push('/signin');
+            return;
+        }
         try {
             const isInWishlist = wishlist.includes(movie.id);
             if (isInWishlist) {
@@ -109,7 +114,7 @@ export default function SeriesPage() {
         }
     };
 
-    if (!isAuth) return null;
+
 
     return (
         <div className="bg-[#020617] min-h-screen pt-24 px-4 md:px-12">

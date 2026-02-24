@@ -18,8 +18,8 @@ export default function ProfilePage() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token) {
-            router.push("/");
+        if (!token || token === "undefined" || token === "null") {
+            router.push("/signin");
             return;
         }
         

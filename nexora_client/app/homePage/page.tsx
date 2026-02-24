@@ -14,18 +14,20 @@ import { apiCall } from "../../utils/api";
 export default function HomePage() {
     const router = useRouter();
     const [isAuth, setIsAuth] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [wishlist, setWishlist] = useState<number[]>([]);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token || token === "undefined" || token === "null") {
-            router.push("/");
-        } else {
+        if (token && token !== "undefined" && token !== "null") {
             setIsAuth(true);
             fetchWishlist();
+        } else {
+            setIsAuth(false);
         }
-    }, [router]);
+        setLoading(false);
+    }, []);
 
     const fetchWishlist = async () => {
         try {
@@ -37,6 +39,10 @@ export default function HomePage() {
     };
 
     const handleToggleWishlist = async (movie: Movie) => {
+        if (!isAuth) {
+            router.push('/signin');
+            return;
+        }
         try {
             const isInWishlist = wishlist.includes(movie.id);
             if (isInWishlist) {
@@ -64,7 +70,13 @@ export default function HomePage() {
 
 
 
-    if (!isAuth) return null;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#020617] min-h-screen">

@@ -20,15 +20,16 @@ function SearchContent() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token || token === "undefined" || token === "null") {
-            router.push("/");
-        } else {
+        if (token && token !== "undefined" && token !== "null") {
             setIsAuth(true);
-            fetchData();
+            fetchData(true);
+        } else {
+            setIsAuth(false);
+            fetchData(false);
         }
     }, [router, query]);
 
-    const fetchData = async () => {
+    const fetchData = async (authenticated: boolean = false) => {
         if (!query) {
             setResults([]);
             setLoading(false);
@@ -37,12 +38,16 @@ function SearchContent() {
         
         setLoading(true);
         try {
-            const [searchData, wishlistData] = await Promise.all([
-                apiCall(`/search?query=${encodeURIComponent(query)}`),
-                apiCall('/wishlist')
-            ]);
-            setResults(searchData);
-            setWishlist(wishlistData.map((item: any) => item.mediaId));
+            const promises: Promise<any>[] = [apiCall(`/search?query=${encodeURIComponent(query)}`)];
+            if (authenticated) {
+                promises.push(apiCall('/wishlist'));
+            }
+            
+            const [searchData, wishlistData] = await Promise.all(promises);
+            setResults(searchData || []);
+            if (authenticated && wishlistData) {
+                setWishlist(wishlistData.map((item: any) => item.mediaId));
+            }
         } catch (error) {
             console.error("Error fetching search results:", error);
         } finally {
@@ -51,6 +56,10 @@ function SearchContent() {
     };
 
     const handleToggleWishlist = async (movie: Movie) => {
+        if (!isAuth) {
+            router.push('/signin');
+            return;
+        }
         try {
             const isInWishlist = wishlist.includes(movie.id);
             if (isInWishlist) {
@@ -72,7 +81,7 @@ function SearchContent() {
         }
     };
 
-    if (!isAuth) return null;
+
 
     return (
         <div className="bg-[#020617] min-h-screen pt-24 px-4 md:px-12">

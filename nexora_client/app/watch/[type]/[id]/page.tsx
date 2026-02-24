@@ -25,18 +25,18 @@ export default function WatchPage() {
     const [loading, setLoading] = useState(true);
     const [isAuth, setIsAuth] = useState(false);
     const [initialProgress, setInitialProgress] = useState(0);
-    const [playerSource, setPlayerSource] = useState<'vidking' | 'vidsrc'>('vidking');
+    const [playerSource, setPlayerSource] = useState<'vidsrc' | 'vidking'>('vidsrc');
 
     const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token || token === "undefined" || token === "null") {
-            router.push("/");
-        } else {
+        if (token && token !== "undefined" && token !== "null") {
             setIsAuth(true);
-            fetchDetails();
+        } else {
+            setIsAuth(false);
         }
+        fetchDetails(!!(token && token !== "undefined" && token !== "null"));
     }, [id, type]);
 
     // Fetch episodes when season changes
@@ -58,20 +58,26 @@ export default function WatchPage() {
         }
     };
 
-    const fetchDetails = async () => {
+    const fetchDetails = async (authenticated: boolean) => {
         setLoading(true);
         try {
             const endpoint = type === 'movie' ? `/movies/${id}` : `/series/${id}`;
-            const [data, progressData] = await Promise.all([
-                apiCall(endpoint),
-                apiCall('/progress')
-            ]);
+            const promises: Promise<any>[] = [apiCall(endpoint)];
             
+            if (authenticated) {
+                promises.push(apiCall('/progress'));
+            }
+            
+            const results = await Promise.all(promises);
+            const data = results[0];
             setContent(data);
-            
-            const existingProgress = progressData.find((p: any) => p.mediaId === id);
-            if (existingProgress) {
-                setInitialProgress(existingProgress.secondsWatched);
+
+            if (authenticated && results[1]) {
+                const progressData = results[1];
+                const existingProgress = progressData.find((p: any) => p.mediaId === id);
+                if (existingProgress) {
+                    setInitialProgress(existingProgress.secondsWatched);
+                }
             }
 
             const recData = await apiCall(`/trending?type=${type === 'movie' ? 'movie' : 'tv'}`);
@@ -82,8 +88,6 @@ export default function WatchPage() {
             setLoading(false);
         }
     };
-
-    if (!isAuth) return null;
     if (loading) return (
         <div className="min-h-screen bg-[#020617] flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>

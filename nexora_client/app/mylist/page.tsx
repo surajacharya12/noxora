@@ -18,7 +18,7 @@ export default function MyListPage() {
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token || token === "undefined" || token === "null") {
-            router.push("/");
+            router.push("/signin");
         } else {
             setIsAuth(true);
             fetchWishlist();
