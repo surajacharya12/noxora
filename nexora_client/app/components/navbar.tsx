@@ -66,6 +66,7 @@ const Navbar = ({ onSearch }: NavbarProps) => {
           <Link href="/movies" className="hover:text-white transition-colors">Movies</Link>
           <Link href="/series" className="hover:text-white transition-colors">Series</Link>
           <Link href="/trending" className="hover:text-white transition-colors">Trending</Link>
+          <Link href="/request" className="hover:text-white transition-colors">Request</Link>
           {isAuth && <Link href="/mylist" className="hover:text-white transition-colors">My List</Link>}
         </div>
       </div>
@@ -140,6 +141,7 @@ const Navbar = ({ onSearch }: NavbarProps) => {
           <Link href="/movies" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Movies</Link>
           <Link href="/series" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Series</Link>
           <Link href="/trending" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Trending</Link>
+          <Link href="/request" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>Request</Link>
           {isAuth && <Link href="/mylist" className="text-lg font-bold" onClick={() => setMobileMenuOpen(false)}>My List</Link>}
           {!isAuth && (
             <div className="flex flex-col items-center gap-4 mt-4">

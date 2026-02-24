@@ -26,7 +26,6 @@ export default function WatchPage() {
     const [isAuth, setIsAuth] = useState(false);
     const [initialProgress, setInitialProgress] = useState(0);
     const [playerSource, setPlayerSource] = useState<'vidsrc' | 'vidking'>('vidsrc');
-    const [dubLanguage, setDubLanguage] = useState<'original' | 'hi' | 'en'>('original');
 
     const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -91,7 +90,7 @@ export default function WatchPage() {
             setRecommendations((recData.results || []).filter((item: Movie) => item.id.toString() !== id).slice(0, 10));
 
             // Set default dub if available
-            if (data?.dubs?.length) setDubLanguage(data.dubs[0]);
+            
         } catch (error) {
             console.error("Error fetching watch details:", error);
         } finally {
@@ -116,7 +115,6 @@ export default function WatchPage() {
 
     // Player URL
     const getPlayerUrl = () => {
-        const langValue = dubLanguage === 'original' ? '' : dubLanguage;
         
         if (playerSource === 'vidking') {
             const baseUrl = type === 'movie'
@@ -131,7 +129,6 @@ export default function WatchPage() {
                 url.searchParams.set('episodeSelector', 'true');
                 url.searchParams.set('nextEpisode', 'true');
             }
-            if (langValue) url.searchParams.set('lang', langValue);
             
             return url.toString();
         } else {
@@ -140,7 +137,6 @@ export default function WatchPage() {
                 : `https://vidsrc.to/embed/tv/${id}/${activeSeason}/${activeEpisode}`;
             
             const url = new URL(baseUrl);
-            if (langValue) url.searchParams.set('lang', langValue);
             
             return url.toString();
         }
@@ -176,33 +172,14 @@ export default function WatchPage() {
                             <Server size={14} /> Server 2
                         </button>
 
-                        {/* Dub / Language Selector */}
-                        <div className="flex gap-2 ml-2">
-                            {[
-                                { id: 'original', label: 'Original' },
-                                { id: 'hi', label: 'Hindi' },
-                                { id: 'en', label: 'English' }
-                            ].map((lang) => (
-                                <button
-                                    key={lang.id}
-                                    onClick={() => setDubLanguage(lang.id as typeof dubLanguage)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                        dubLanguage === lang.id 
-                                            ? 'bg-cyan-500 border-cyan-400 text-black' 
-                                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                                    }`}
-                                >
-                                    {lang.label.toUpperCase()}
-                                </button>
-                            ))}
-                        </div>
+                       
                     </div>
                 </div>
 
                 {/* Video Player */}
                 <div className="w-full aspect-video bg-black relative shadow-2xl overflow-hidden border-y border-white/5 group">
                     <iframe 
-                        key={`${playerSource}-${activeSeason}-${activeEpisode}-${dubLanguage}`}
+                        key={`${playerSource}-${activeSeason}-${activeEpisode}`}
                         src={getPlayerUrl()}
                         className="w-full h-full"
                         allowFullScreen

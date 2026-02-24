@@ -10,7 +10,7 @@ const VIDKING_BASE_URL = process.env.VIDKING_BASE_URL;
 async function fetchDetails(type, id) {
   try {
     const response = await axios.get(
-      `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}`,
+      `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&append_to_response=translations,videos,credits`,
     );
     return response.data;
   } catch (error) {
